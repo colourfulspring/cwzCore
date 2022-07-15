@@ -92,7 +92,7 @@ void IO_put_char(char c) {
 }
 
 char IO_get_char(void) {
-    TUI_getChar();
+    return TUI_getChar();
 }
 
 int32_t IO_write_string(const char *s) {

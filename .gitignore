@@ -34,3 +34,6 @@
 # Custom
 *.vscode
 build/
+.clangd
+.cache
+.idea

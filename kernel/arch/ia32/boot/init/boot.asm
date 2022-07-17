@@ -38,7 +38,8 @@ Label_Start:
     XOR AH, AH
     XOR DL, DL
     INT 13H
-    JMP $
+    JMP BaseOfOrder:OffsetOfLoader
+   ; CALL main
 
 StartBootMessage: db "Start Booting......"
 

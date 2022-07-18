@@ -6,7 +6,7 @@ list(APPEND _asm_compile_options)
 list(APPEND _c_compile_options -nostdinc -ffreestanding -fPIC -Wall -fno-stack-protector -fno-builtin) # 不查找编译器标准库
 
 foreach(_option ${_compile_options})
-    add_compile_options(${_option}>)  
+    add_compile_options(${_option})
 endforeach()
 
 foreach(_option ${_asm_compile_options})

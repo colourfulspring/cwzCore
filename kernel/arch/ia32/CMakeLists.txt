@@ -1,13 +1,13 @@
 include(KernelTools)
 
-project(boot)
+project(boot C ASM)
 
 add_subdirectory(boot)
 
 # 手动链接
 set(LINK_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/bootblock.o)
 add_custom_command(OUTPUT ${LINK_OUTPUT}
-    COMMAND ld -m elf_x86_64 -nostdlib 
+    COMMAND ${CMAKE_LINKER} -m elf_i386 -nostdlib
             -N -e start -Ttext 0x7C00
             $<TARGET_OBJECTS:${BOOT_ASM}>
             $<TARGET_OBJECTS:${BOOT_C}>

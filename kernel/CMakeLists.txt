@@ -1,4 +1,4 @@
-project(kernel)
+project(kernel C ASM)
 
 # 添加编译宏定义与编译参数
 list(APPEND _compile_options)

@@ -1,4 +1,4 @@
-project(tools)
+project(tools C)
 
 add_executable(sign sign.c)
 

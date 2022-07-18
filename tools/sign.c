@@ -1,3 +1,7 @@
+#ifndef __x86_64__
+#define _FILE_OFFSET_BITS 64
+#endif
+
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>

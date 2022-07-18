@@ -1,7 +1,5 @@
-project(drivers)
+set(drivers_src tui/port.c tui/tui.c io.c)
 
-include_directories("tui/include")
+target_sources(${KERNEL_TARGET} PRIVATE ${drivers_src})
 
-add_library(${PROJECT_NAME} OBJECT tui/port.c tui/tui.c io.c)
-
-target_include_directories(${PROJECT_NAME} PUBLIC "tui/include")
+target_include_directories(${KERNEL_TARGET} PUBLIC "tui/include")

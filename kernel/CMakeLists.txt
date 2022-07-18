@@ -1,11 +1,9 @@
 project(kernel)
 
-set(KERNEL_TARGET kernel.img)
-
 # 添加编译宏定义与编译参数
-list(APPEND _compile_options) # 不查找编译器标准库
+list(APPEND _compile_options)
 list(APPEND _asm_compile_options)
-list(APPEND _c_compile_options -nostdinc -ffreestanding -fPIC -Wall -fno-stack-protector -fno-builtin)
+list(APPEND _c_compile_options -nostdinc -ffreestanding -fPIC -Wall -fno-stack-protector -fno-builtin) # 不查找编译器标准库
 
 foreach(_option ${_compile_options})
     add_compile_options(${_option}>)  
@@ -23,28 +21,16 @@ endforeach()
 include_directories(common)
 include_directories(libc/include)
 
-# 架构
+# 添加目标
+set(KERNEL_TARGET kernel.img)
+
+add_executable(${KERNEL_TARGET})
+
+# 添加子目录
 add_subdirectory(arch)
-
-# 驱动
 add_subdirectory(drivers)
-
-# 文件系统
 add_subdirectory(fs)
-
-# C 库
 add_subdirectory(libc)
-
-add_executable(${KERNEL_TARGET}
-    $<TARGET_OBJECTS:arch>
-    $<TARGET_OBJECTS:drivers>
-    $<TARGET_OBJECTS:fs>
-    $<TARGET_OBJECTS:libc>
-)
 
 # 不链接标准库，不检查栈
 target_link_options(${KERNEL_TARGET} PUBLIC -no-pie -nostdlib -nostartfiles)
-
-add_dependencies(${KERNEL_TARGET} linker.ld)
-
-target_link_options(${KERNEL_TARGET} PRIVATE -T ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/linker.ld)

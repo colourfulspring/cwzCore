@@ -22,8 +22,6 @@ include_directories(common)
 include_directories(libc/include)
 
 # 添加目标
-set(KERNEL_TARGET kernel.img)
-
 add_executable(${KERNEL_TARGET})
 
 # 添加子目录

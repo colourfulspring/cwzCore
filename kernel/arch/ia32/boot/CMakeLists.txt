@@ -1,12 +1,19 @@
-include(KernelTools)
+set(BOOT_ASM boot_asm)
+set(BOOT_C boot_c)
 
-target_include_directories(${KERNEL_TARGET} PRIVATE include)
+add_library(${BOOT_ASM} OBJECT init/boot.S)
+add_library(${BOOT_C} OBJECT init/main.c)
 
-set(init_src init/boot.asm init/main.c)    
-target_sources(${KERNEL_TARGET} PRIVATE ${init_src})
+target_include_directories(${BOOT_ASM} PRIVATE include)
+target_include_directories(${BOOT_C} PRIVATE include)
 
-# Get Object File Names
-os_target_sources_out_objects(${KERNEL_TARGET} kernel init_objects ${init_src})
-set(init_objects ${init_objects} PARENT_SCOPE)
+target_compile_options(${BOOT_ASM} PRIVATE
+    -fno-builtin -fno-PIC -Wall -ggdb -m32 -gstabs -nostdinc  -fno-stack-protector -Os -nostdinc -c
+)
 
-os_objcopy_binary(${KERNEL_TARGET} kernel8.img)
+target_compile_options(${BOOT_C} PRIVATE
+    -fno-builtin -fno-PIC -Wall -ggdb -m32 -gstabs -nostdinc  -fno-stack-protector -Os -nostdinc -c
+)
+
+set(BOOT_ASM ${BOOT_ASM} PARENT_SCOPE)
+set(BOOT_C ${BOOT_C} PARENT_SCOPE)

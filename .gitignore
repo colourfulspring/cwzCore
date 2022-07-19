@@ -37,3 +37,4 @@ build/
 .clangd
 .cache
 .idea
+backup/

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(cwzCore C ASM)
+project(scene C ASM)
 
 # 设置参数
 set(CMAKE_C_STANDARD 99)
@@ -20,14 +20,32 @@ else()
 endif()
 if (EXISTS ${CMAKE_OBJCOPY})
     message(STATUS "Check for objcopy: ${CMAKE_OBJCOPY}")
-    else()
+else()
     message(FATAL_ERROR "ObjCopy not found!")
 endif()
 
-# 特殊目标
-set(KERNEL_TARGET kernel.img)
+# 设置全局可见目标名称
+set(TOOLS_TARGET tools)
+
+set(BOOT_BLOCK_TARGET bootblock)
+
+set(KERNEL_TARGET kernel)
+
+set(FINAL_TARGET scene)
 
 # 添加子目录
 add_subdirectory(tools)
 
 add_subdirectory(kernel)
+
+# 最终目标
+get_target_property(BOOT_BLOCK_FILE ${BOOT_BLOCK_TARGET} OUTPUT_FILE)
+set(FINAL_OUTPUT ${CMAKE_BINARY_DIR}/scene.img)
+add_custom_command(OUTPUT ${FINAL_OUTPUT}
+    COMMAND dd if=/dev/zero of=${FINAL_OUTPUT} count=10000
+    COMMAND dd if=${BOOT_BLOCK_FILE} of=${FINAL_OUTPUT} conv=notrunc
+	COMMAND dd if=$<TARGET_FILE:${KERNEL_TARGET}> of=${FINAL_OUTPUT} seek=1 conv=notrunc
+    DEPENDS ${BOOT_BLOCK_TARGET} ${KERNEL_TARGET}
+)
+add_custom_target(${FINAL_TARGET} DEPENDS ${FINAL_OUTPUT})
+set_target_properties(${FINAL_TARGET} PROPERTIES OUTPUT_FILE ${FINAL_OUTPUT})

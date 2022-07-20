@@ -144,7 +144,7 @@ long long strtoll(const char *nptr, char **endptr, int base) {
     cutoff = neg ? (unsigned long long)-(LLONG_MIN + LLONG_MAX) + LLONG_MAX
                  : LLONG_MAX;
 
-#if defined(SCE_ARCH_IA32)
+#ifndef __x86_64__
     cutoff = udivmoddi4(cutoff, base, (unsigned long long *)&cutlim);
 #else
     cutlim = cutoff % (long long)base;

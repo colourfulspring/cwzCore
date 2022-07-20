@@ -271,7 +271,7 @@ static size_t _ntoa_long_long(out_fct_type out, char *buffer, size_t idx,
         flags &= ~FLAGS_HASH;
     }
 
-#if defined(SCE_ARCH_IA32)
+#ifndef __x86_64__
     // write if precision != 0 and value is != 0
     if (!(flags & FLAGS_PRECISION) || value) {
         do {

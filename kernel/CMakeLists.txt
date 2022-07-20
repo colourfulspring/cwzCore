@@ -35,5 +35,3 @@ add_subdirectory(libc)
 
 # 不链接标准库，不检查栈
 target_link_options(${KERNEL_TARGET} PUBLIC -no-pie -nostdlib -nostartfiles)
-
-target_compile_definitions(${KERNEL_TARGET} PRIVATE SCE_ARCH_IA32)

@@ -31,7 +31,7 @@
  * */
 
 #define SECTSIZE 512
-#define ELFHDR ((struct elfhdr *)0x10000) // scratch space
+#define ELFHDR ((struct elfhdr *) 0x10000) // scratch space
 
 /* waitdisk - wait for disk ready */
 static void waitdisk(void) {
@@ -75,14 +75,14 @@ static void readseg(uintptr_t va, uint32_t count, uint32_t offset) {
     // We'd write more to memory than asked, but it doesn't matter --
     // we load in increasing order.
     for (; va < end_va; va += SECTSIZE, secno++) {
-        readsect((void *)va, secno);
+        readsect((void *) va, secno);
     }
 }
 
 /* bootmain - the entry of bootloader */
 void bootmain(void) {
     // read the 1st page off disk
-    readseg((uintptr_t)ELFHDR, SECTSIZE * 8, 0);
+    readseg((uintptr_t) ELFHDR, SECTSIZE * 8, 0);
 
     // is this a valid ELF?
     if (ELFHDR->e_magic != ELF_MAGIC) {
@@ -92,7 +92,7 @@ void bootmain(void) {
     struct proghdr *ph, *eph;
 
     // load each program segment (ignores ph flags)
-    ph = (struct proghdr *)((uintptr_t)ELFHDR + ELFHDR->e_phoff);
+    ph = (struct proghdr *) ((uintptr_t) ELFHDR + ELFHDR->e_phoff);
     eph = ph + ELFHDR->e_phnum;
     for (; ph < eph; ph++) {
         // 注意这里 ph->p_va & 0xFFFFFF, 只取了链接时指定的虚拟地址 0xC0100000 的后 6 个十六进制位,

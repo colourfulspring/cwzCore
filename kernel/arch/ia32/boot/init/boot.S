@@ -118,3 +118,23 @@ gdt:
 gdtdesc:
     .word 0x17                                      # sizeof(gdt) - 1 (8*3-1 = 23 = 0x17)
     .long gdt                                       # address gdt
+
+    # display on screen: Start Booting......
+// .globl print_hello
+// print_hello:
+//     mov $0x1301, %ax
+//     mov $0x000F, %bx
+//     mov $17, %cx
+//     mov $0x0, %dx
+//     push %ax
+//     mov %ds, %ax
+//     mov %ax, %es
+//     pop %ax
+//     mov StartBootMessage, %bp
+//     int $0x10
+
+// loop:
+//     jmp loop
+
+// StartBootMessage:
+//     .ascii "Start Booting...\n"

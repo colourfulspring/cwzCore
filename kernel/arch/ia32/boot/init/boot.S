@@ -14,8 +14,8 @@
 .globl start
 start:
 .code16                                             # Assemble for 16-bit mode
-    cli                                             # Disable interrupts
-    cld                                             # String operations increment
+    # cli                                             # Disable interrupts
+    # cld                                             # String operations increment
 
     # Set up the important data segment registers (DS, ES, SS).
     xorw %ax, %ax                                   # Segment number zero
@@ -28,22 +28,27 @@ start:
     #  address line 20 is tied low, so that addresses higher than
     #  1MB wrap around to zero by default. This code undoes this.
 
-    # read
-    call wait_8042
-    movb $0xd0, %al
-    outb %al, $0x64
-    call wait_8042
-    inb $0x60, %al
-    # modify
-    movb %al, %dl
-    orb $0x2, %dl                                   # enable the A20 bit
-    # write
-    call wait_8042
-    movb $0xd1, %al
-    outb %al, $0x64
-    call wait_8042
-    movb %dl, %al
-    outb %al, $0x60
+    push %ax
+    mov $0x2401, %ax
+    int $0x15 
+    pop %ax
+
+    # # read
+    # call wait_8042
+    # movb $0xd0, %al
+    # outb %al, $0x64
+    # call wait_8042
+    # inb $0x60, %al
+    # # modify
+    # movb %al, %dl
+    # orb $0x2, %dl                                   # enable the A20 bit
+    # # write
+    # call wait_8042
+    # movb $0xd1, %al
+    # outb %al, $0x64
+    # call wait_8042
+    # movb %dl, %al
+    # outb %al, $0x60
 
 probe_memory:
     movl $0, 0x8000            # 0x8000 处开始存放 struct e820map, 前 4 字节是系统内存映射地址描述符（ARD）个数
@@ -77,11 +82,11 @@ finish_probe:
     # Switches processor into 32-bit mode.
     ljmp $PROT_MODE_CSEG, $protcseg
 
-wait_8042:
-    inb $0x64, %al                                  # Wait for 8042 not busy.
-    testb $0x2, %al
-    jnz wait_8042
-    ret
+# wait_8042:
+#     inb $0x64, %al                                  # Wait for 8042 not busy.
+#     testb $0x2, %al
+#     jnz wait_8042
+#     ret
 
 .code32                                             # Assemble for 32-bit mode
 protcseg:

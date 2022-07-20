@@ -1,15 +1,21 @@
 V := @
 
-.PHONY: all build qemu
+BUILD_DIR := build
+KERNEL_IMG := $(BUILD_DIR)/scene.img
+
+.PHONY: all build clean qemu dos2unix
 
 all:
-	$(V)echo "?"
+	$(V)cmake --build $(BUILD_DIR) --target all
 
 build:
-	$(V)scripts/helper.sh build
+	$(V)cmake --build $(BUILD_DIR) --target kernel
+
+clean:
+	$(V)cmake --build $(BUILD_DIR) --target clean
 
 qemu:
-	$(V)scripts/helper.sh qemu
+	qemu-system-i386 -nographic -drive file=$(KERNEL_IMG)
 
 dos2unix:
 	find . -type f -exec dos2unix {} \;

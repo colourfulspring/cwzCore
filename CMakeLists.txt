@@ -18,10 +18,18 @@ if (EXISTS ${CMAKE_LINKER})
 else()
     message(FATAL_ERROR "Linker not found!")
 endif()
+
 if (EXISTS ${CMAKE_OBJCOPY})
     message(STATUS "Check for objcopy: ${CMAKE_OBJCOPY}")
 else()
-    message(FATAL_ERROR "ObjCopy not found!")
+    message(FATAL_ERROR "Command objcopy not found!")
+endif()
+
+find_program(CMAKE_DD dd)
+if (EXISTS ${CMAKE_DD})
+    message(STATUS "Check for dd: ${CMAKE_DD}")
+else()
+    message(FATAL_ERROR "Command dd not found!")
 endif()
 
 # 设置全局可见目标名称
@@ -42,10 +50,10 @@ add_subdirectory(kernel)
 get_target_property(BOOT_BLOCK_FILE ${BOOT_BLOCK_TARGET} OUTPUT_FILE)
 set(FINAL_OUTPUT ${CMAKE_BINARY_DIR}/scene.img)
 add_custom_command(OUTPUT ${FINAL_OUTPUT}
-    COMMAND dd if=/dev/zero of=${FINAL_OUTPUT} count=10000
-    COMMAND dd if=${BOOT_BLOCK_FILE} of=${FINAL_OUTPUT} conv=notrunc
-	COMMAND dd if=$<TARGET_FILE:${KERNEL_TARGET}> of=${FINAL_OUTPUT} seek=1 conv=notrunc
+    COMMAND ${CMAKE_DD} if=/dev/zero of=${FINAL_OUTPUT} count=10000
+    COMMAND ${CMAKE_DD} if=${BOOT_BLOCK_FILE} of=${FINAL_OUTPUT} conv=notrunc
+	COMMAND ${CMAKE_DD} if=$<TARGET_FILE:${KERNEL_TARGET}> of=${FINAL_OUTPUT} seek=1 conv=notrunc
     DEPENDS ${BOOT_BLOCK_TARGET} ${KERNEL_TARGET}
 )
-add_custom_target(${FINAL_TARGET} DEPENDS ${FINAL_OUTPUT})
+add_custom_target(${FINAL_TARGET} ALL DEPENDS ${FINAL_OUTPUT})
 set_target_properties(${FINAL_TARGET} PROPERTIES OUTPUT_FILE ${FINAL_OUTPUT})

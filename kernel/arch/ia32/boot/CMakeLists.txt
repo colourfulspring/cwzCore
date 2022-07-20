@@ -33,7 +33,7 @@ add_custom_command(OUTPUT ${LINK_OUTPUT} ${OBJCOPY_OUTPUT} ${SIGN_OUTPUT}
 )
 
 # 设置boot目标依赖刚才扩充完的文件
-add_custom_target(${BOOT_BLOCK_TARGET} DEPENDS ${SIGN_OUTPUT})
+add_custom_target(${BOOT_BLOCK_TARGET} ALL DEPENDS ${SIGN_OUTPUT})
 set_target_properties(${BOOT_BLOCK_TARGET} PROPERTIES OUTPUT_FILE ${SIGN_OUTPUT})
 
 # 设置boot目标依赖tools

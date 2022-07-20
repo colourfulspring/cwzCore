@@ -2,17 +2,19 @@ include(KernelTools)
 
 project(boot C ASM)
 
+# 编译启动块的各个目标文件
+set(BOOT_OBJECTS boot_objects)
 add_subdirectory(boot)
 
 # 手动链接
 set(LINK_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/bootblock.o)
 add_custom_command(OUTPUT ${LINK_OUTPUT}
-    COMMAND ${CMAKE_LINKER} -m elf_i386 -nostdlib
-            -N -e start -Ttext 0x7C00
-            $<TARGET_OBJECTS:${BOOT_ASM}>
-            $<TARGET_OBJECTS:${BOOT_C}>
+    COMMAND ${CMAKE_LINKER}
+            -m elf_i386 -nostdlib -N -T ${CMAKE_CURRENT_SOURCE_DIR}/boot.ld
+            $<TARGET_OBJECTS:${BOOT_OBJECTS}>
             -o ${LINK_OUTPUT}
-    DEPENDS ${BOOT_ASM} ${BOOT_C}
+    DEPENDS ${BOOT_OBJECTS}
+    COMMAND_EXPAND_LISTS
 )
 add_custom_target(link_target DEPENDS ${LINK_OUTPUT})
 

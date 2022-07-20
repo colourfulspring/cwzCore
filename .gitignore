@@ -37,3 +37,5 @@ build/
 .clangd
 .cache
 .idea
+
+ucore

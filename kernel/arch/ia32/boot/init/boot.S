@@ -1,4 +1,4 @@
-#include <asm.h>
+// #include <asm.h>
 
 # Start the CPU: switch to 32-bit protected mode, jump into C.
 # The BIOS loads this code from the first sector of the hard disk into
@@ -33,23 +33,6 @@ start:
     int $0x15 
     pop %ax
 
-    # # read
-    # call wait_8042
-    # movb $0xd0, %al
-    # outb %al, $0x64
-    # call wait_8042
-    # inb $0x60, %al
-    # # modify
-    # movb %al, %dl
-    # orb $0x2, %dl                                   # enable the A20 bit
-    # # write
-    # call wait_8042
-    # movb $0xd1, %al
-    # outb %al, $0x64
-    # call wait_8042
-    # movb %dl, %al
-    # outb %al, $0x60
-
 probe_memory:
     movl $0, 0x8000            # 0x8000 处开始存放 struct e820map, 前 4 字节是系统内存映射地址描述符（ARD）个数
     xorl %ebx, %ebx            # EBX 清零
@@ -69,24 +52,40 @@ continue_probe:                # CF == 0, 继续探测
     jnz start_probe            # EBX != 0 则继续探测
 finish_probe:
 
+
     # Switch from real to protected mode, using a bootstrap GDT
     # and segment translation that makes virtual addresses
     # identical to physical addresses, so that the
     # effective memory map does not change during the switch.
-    lgdt gdtdesc
+
+.section .gdt
+label_gdt:
+    .int 0x0, 0x0
+label_desc_code32:
+    .int 0x0000ffff, 0x00cf9a00
+label_desc_data32:
+    .int 0x0000ffff, 0x00cf9200
+
+    .equ gdt_len, 0x17
+
+gdtptr:
+    .word gdt_len - 1;
+    .int  label_gdt
+
+    .equ selector_code32, label_desc_code32 - label_gdt
+    .equ selector_data32, label_desc_data32 - label_gdt
+
+    cli                 # Turn off interrupts
+    .byte 0x66          # why does OSbook have this line but ucore doesn't have? Experiment shows no different
+    lgdt gdtptr
     movl %cr0, %eax
     orl $CR0_PE_ON, %eax
     movl %eax, %cr0
 
     # Jump to next instruction, but in 32-bit code segment.
     # Switches processor into 32-bit mode.
-    ljmp $PROT_MODE_CSEG, $protcseg
-
-# wait_8042:
-#     inb $0x64, %al                                  # Wait for 8042 not busy.
-#     testb $0x2, %al
-#     jnz wait_8042
-#     ret
+    // ljmp $PROT_MODE_CSEG, $protcseg
+    ljmp $selector_code32, $protcseg
 
 .code32                                             # Assemble for 32-bit mode
 protcseg:
@@ -98,6 +97,77 @@ protcseg:
     movw %ax, %gs                                   # -> GS
     movw %ax, %ss                                   # -> SS: Stack Segment
 
+
+    # Switch from protected mode to IA-32e mode, 
+    # ?? using a bootstrap GDT
+    # ?? and segment translation that makes virtual addresses
+    # ?? identical to physical addresses, so that the
+    # ?? effective memory map does not change during the switch.
+
+.section .gdt64
+label_gdt64:
+    .quad 0x0
+label_desc_code64:
+    .quad 0x0020980000000000
+label_desc_data64:
+    .quad 0x0000920000000000
+
+    .equ gdt_len64, 0x17
+gdtptr64:
+    .word gdt_len64 - 1;
+    .int  label_gdt64
+
+    .equ selector_code64, label_desc_code64 - label_gdt64
+    .equ selector_data64, label_desc_data64 - label_gdt64
+
+// template page table at address 0x90000
+    movl $0x91007, 0x90000
+    movl $0x91007, 0x90800
+
+    movl $0x92007, 0x91000
+
+    movl $0x000083, 0x92000
+    movl $0x200083, 0x92008
+    movl $0x400083, 0x92010
+    movl $0x600083, 0x92018
+    movl $0x800083, 0x92020
+    movl $0xa00083, 0x92028
+
+// load GDTR
+    .byte 0x66
+    lgdt gdtptr64
+    mov $0x10, %ax
+    mov %ax, %ds
+    mov %ax, %ds
+    mov %ax, %fs
+    mov %ax, %gs
+    mov %ax, %ss
+
+// open PAE
+    movl %cr4, %eax
+    btsl $5, %eax     // bts eax, 5 ?
+    movl %eax, %cr4
+
+// load cr3
+    movl $0x90000, %eax
+    movl %eax, %cr3
+
+// enable long-mode
+    movl $0xc0000080, %ecx      // IA32_EFER
+    rdmsr
+
+    btsl $8, %eax
+    wrmsr
+
+// open PE and paging
+    movl %cr0, %eax
+    btsl $0, %eax
+    btsl $31, %eax
+    movl %eax, %cr0
+
+// jump from loader to kernel
+    //ljmp $selector_code64, $bootmain // ??
+
     # Set up the stack pointer and call into C. The stack region is from 0--start(0x7c00)
     movl $0x0, %ebp
     movl $start, %esp
@@ -106,35 +176,3 @@ protcseg:
     # If bootmain returns (it shouldn't), loop.
 spin:
     jmp spin
-
-.data
-# Bootstrap GDT
-.p2align 2                                    # force 4 byte alignment
-gdt:
-    SEG_NULLASM                               # null seg， selector: 0x0
-    SEG_ASM(STA_X|STA_R, 0x0, 0xffffffff)     # code seg for bootloader and kernel, selector: 0x8
-    SEG_ASM(STA_W, 0x0, 0xffffffff)           # data seg for bootloader and kernel, selector: 0x10
-
-gdtdesc:
-    .word 0x17                                      # sizeof(gdt) - 1 (8*3-1 = 23 = 0x17)
-    .long gdt                                       # address gdt
-
-    # display on screen: Start Booting......
-// .globl print_hello
-// print_hello:
-//     mov $0x1301, %ax
-//     mov $0x000F, %bx
-//     mov $17, %cx
-//     mov $0x0, %dx
-//     push %ax
-//     mov %ds, %ax
-//     mov %ax, %es
-//     pop %ax
-//     mov StartBootMessage, %bp
-//     int $0x10
-
-// loop:
-//     jmp loop
-
-// StartBootMessage:
-//     .ascii "Start Booting...\n"

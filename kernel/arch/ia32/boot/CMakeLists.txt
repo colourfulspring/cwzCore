@@ -6,7 +6,7 @@ set(BOOT_OBJECTS boot_objects)
 add_library(${BOOT_OBJECTS} OBJECT init/boot.S init/main.c)
 target_include_directories(${BOOT_OBJECTS} PRIVATE include)
 target_compile_options(${BOOT_OBJECTS} PRIVATE
-                    -march=i686 -fno-builtin -fno-PIC -Wall
+                    -fno-builtin -fno-PIC -Wall
                     -nostdinc -fno-stack-protector -Os -c)
 
 # 设置输出文件名

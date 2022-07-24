@@ -5,7 +5,7 @@ KERNEL_IMG := $(BUILD_DIR)/scene.img
 
 .PHONY: all build clean qemu dos2unix
 
-all:
+all: clean
 	$(V)cmake --build $(BUILD_DIR) --target all
 
 build:

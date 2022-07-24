@@ -1,5 +1,5 @@
 #include <defs.h>
-#include <elf.h>
+#include <elf64.h>
 #include <x86.h>
 
 /* *********************************************************************
@@ -31,7 +31,9 @@
  * */
 
 #define SECTSIZE 512
-#define ELFHDR ((struct elfhdr *) 0x10000) // scratch space
+
+#define ELFHDR ((struct elf_header *) 0x10000) // scratch space
+#define ADDR_MASK 0xFFFFFFFF
 
 /* waitdisk - wait for disk ready */
 static void waitdisk(void) {
@@ -85,27 +87,22 @@ void bootmain(void) {
     readseg((uintptr_t) ELFHDR, SECTSIZE * 8, 0);
 
     // is this a valid ELF?
-    if (ELFHDR->e_magic != ELF_MAGIC) {
+    if (ELFHDR->e_indent.ei_magic != ELF_MAGIC) {
         goto bad;
     }
 
-    struct proghdr *ph, *eph;
+    struct elf_program_header *ph, *eph;
 
     // load each program segment (ignores ph flags)
-    ph = (struct proghdr *) ((uintptr_t) ELFHDR + ELFHDR->e_phoff);
+    ph = (struct elf_program_header *) ((uintptr_t) ELFHDR + ELFHDR->e_phoff);
     eph = ph + ELFHDR->e_phnum;
     for (; ph < eph; ph++) {
-        // 注意这里 ph->p_va & 0xFFFFFF, 只取了链接时指定的虚拟地址 0xC0100000 的后 6 个十六进制位,
-        // 也就是将内核装载到物理地址 0x00100000.
-        // 后面启动页机制后, 将把虚拟地址 0xC0100000 映射到物理地址 0x00100000.
-        readseg(ph->p_va & 0xFFFFFF, ph->p_memsz, ph->p_offset);
+        readseg(ph->p_vaddr & ADDR_MASK, ph->p_memsz, ph->p_offset);
     }
 
     // call the entry point from the ELF header
     // note: does not return
-    // 不同于 Lab 1, 这里 ELFHDR->e_entry 指向 kern/init/entry.S 的 kern_entry,
-    // 被装载到了物理地址 0x00100000.
-    ((void (*)(void))(ELFHDR->e_entry & 0xFFFFFF))();
+    ((void (*)(void))(ELFHDR->e_entry & ADDR_MASK))();
 
 bad:
     outw(0x8A00, 0x8A00);

@@ -1,38 +1,33 @@
-// #include <asm.h>
+#include <asm.h>
 
-# Start the CPU: switch to 32-bit protected mode, jump into C.
-# The BIOS loads this code from the first sector of the hard disk into
-# memory at physical address 0x7c00 and starts executing in real mode
-# with %cs=0 %ip=7c00.
+.set CR0_PE_ON,             0x1                     # 保护模式标识
+.set SMAP,                  0x534d4150              # SMAP字符串
 
-.set PROT_MODE_CSEG,        0x8                     # kernel code segment selector
-.set PROT_MODE_DSEG,        0x10                    # kernel data segment selector
-.set CR0_PE_ON,             0x1                     # protected mode enable flag
-.set SMAP,                  0x534d4150
 
-# start address should be 0:7c00, in real mode, the beginning address of the running bootloader
-.globl start
-start:
-.code16                                             # Assemble for 16-bit mode
-    # cli                                             # Disable interrupts
-    # cld                                             # String operations increment
 
-    # Set up the important data segment registers (DS, ES, SS).
+
+
+.code16                                             # 声明16位模式
+
+# 代码段：准备
+.section .text                                      # 声明代码段
+.global start
+start:                                              # 起始地址0x7c00
+    cli                                             # 关中断
+
+    # 段寄存器清零
     xorw %ax, %ax                                   # Segment number zero
     movw %ax, %ds                                   # -> Data Segment
     movw %ax, %es                                   # -> Extra Segment
     movw %ax, %ss                                   # -> Stack Segment
 
-    # Enable A20:
-    #  For backwards compatibility with the earliest PCs, physical
-    #  address line 20 is tied low, so that addresses higher than
-    #  1MB wrap around to zero by default. This code undoes this.
-
+    # 为了兼容早期设备，需要打开A20
     push %ax
     mov $0x2401, %ax
     int $0x15 
     pop %ax
 
+    # 探测内存
 probe_memory:
     movl $0, 0x8000            # 0x8000 处开始存放 struct e820map, 前 4 字节是系统内存映射地址描述符（ARD）个数
     xorl %ebx, %ebx            # EBX 清零
@@ -53,124 +48,50 @@ continue_probe:                # CF == 0, 继续探测
 finish_probe:
 
 
-    # Switch from real to protected mode, using a bootstrap GDT
-    # and segment translation that makes virtual addresses
-    # identical to physical addresses, so that the
-    # effective memory map does not change during the switch.
-
-.section .gdt
+# 数据段：临时描述符表
+.section .data
 label_gdt:
-    .int 0x0, 0x0
+    SEG_NULLASM
 label_desc_code32:
-    .int 0x0000ffff, 0x00cf9a00
+    SEG_ASM(STA_X | STA_R, 0x0, 0xffffffff) # 可执行/可读，基地址0x0，段长度0xFFFFF
 label_desc_data32:
-    .int 0x0000ffff, 0x00cf9200
+    SEG_ASM(STA_W, 0x0, 0xffffffff)         # 可写，基地址0x0，段长度0xFFFFF
 
-    .equ gdt_len, 0x17
+.set gdt_len, 0x18
+.set selector_code32, label_desc_code32 - label_gdt # 32位代码段选择子
+.set selector_data32, label_desc_data32 - label_gdt # 32位数据段选择子
 
-gdtptr:
-    .word gdt_len - 1;
-    .int  label_gdt
+gdtdesc:
+    .word gdt_len - 1;  # 全局描述符表边界（数值上等于表长-1）
+    .int  label_gdt     # 全局描述符表线性基地址
 
-    .equ selector_code32, label_desc_code32 - label_gdt
-    .equ selector_data32, label_desc_data32 - label_gdt
-
-    cli                 # Turn off interrupts
+# 代码段：跳转到32位
+.section .text          # 代码段
     .byte 0x66          # why does OSbook have this line but ucore doesn't have? Experiment shows no different
-    lgdt gdtptr
+    lgdt gdtdesc
     movl %cr0, %eax
     orl $CR0_PE_ON, %eax
-    movl %eax, %cr0
+    movl %eax, %cr0     # 从实模式进入保护模式
 
-    # Jump to next instruction, but in 32-bit code segment.
-    # Switches processor into 32-bit mode.
-    // ljmp $PROT_MODE_CSEG, $protcseg
+    # 跳转到32位模式
     ljmp $selector_code32, $protcseg
 
-.code32                                             # Assemble for 32-bit mode
+
+
+
+
+.code32                                             # 声明32位模式
 protcseg:
     # Set up the protected-mode data segment registers
-    movw $PROT_MODE_DSEG, %ax                       # Our data segment selector
+    movw $selector_data32, %ax                      # Our data segment selector
     movw %ax, %ds                                   # -> DS: Data Segment
     movw %ax, %es                                   # -> ES: Extra Segment
     movw %ax, %fs                                   # -> FS
     movw %ax, %gs                                   # -> GS
     movw %ax, %ss                                   # -> SS: Stack Segment
 
-
-    # Switch from protected mode to IA-32e mode, 
-    # ?? using a bootstrap GDT
-    # ?? and segment translation that makes virtual addresses
-    # ?? identical to physical addresses, so that the
-    # ?? effective memory map does not change during the switch.
-
-.section .gdt64
-label_gdt64:
-    .quad 0x0
-label_desc_code64:
-    .quad 0x0020980000000000
-label_desc_data64:
-    .quad 0x0000920000000000
-
-    .equ gdt_len64, 0x17
-gdtptr64:
-    .word gdt_len64 - 1;
-    .int  label_gdt64
-
-    .equ selector_code64, label_desc_code64 - label_gdt64
-    .equ selector_data64, label_desc_data64 - label_gdt64
-
-// template page table at address 0x90000
-    movl $0x91007, 0x90000
-    movl $0x91007, 0x90800
-
-    movl $0x92007, 0x91000
-
-    movl $0x000083, 0x92000
-    movl $0x200083, 0x92008
-    movl $0x400083, 0x92010
-    movl $0x600083, 0x92018
-    movl $0x800083, 0x92020
-    movl $0xa00083, 0x92028
-
-// load GDTR
-    .byte 0x66
-    lgdt gdtptr64
-    mov $0x10, %ax
-    mov %ax, %ds
-    mov %ax, %ds
-    mov %ax, %fs
-    mov %ax, %gs
-    mov %ax, %ss
-
-// open PAE
-    movl %cr4, %eax
-    btsl $5, %eax     // bts eax, 5 ?
-    movl %eax, %cr4
-
-// load cr3
-    movl $0x90000, %eax
-    movl %eax, %cr3
-
-// enable long-mode
-    movl $0xc0000080, %ecx      // IA32_EFER
-    rdmsr
-
-    btsl $8, %eax
-    wrmsr
-
-// open PE and paging
-    movl %cr0, %eax
-    btsl $0, %eax
-    btsl $31, %eax
-    movl %eax, %cr0
-
-// jump from loader to kernel
-    //ljmp $selector_code64, $bootmain // ??
-
-    # Set up the stack pointer and call into C. The stack region is from 0--start(0x7c00)
-    movl $0x0, %ebp
-    movl $start, %esp
+    movl $0x0, %ebp                         # 帧指针
+    movl $start, %esp                       # 栈指针（栈空间0~0x7c00）
     call bootmain
 
     # If bootmain returns (it shouldn't), loop.

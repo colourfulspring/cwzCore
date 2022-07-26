@@ -3,11 +3,19 @@
 #ifndef inode_h
 #define inode_h
 
+#ifdef NOT_OS
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#else
 #include "stdint.h"
+#include "stdio.h"
+#include "string.h"
+#endif
 
 #include "extent_protocol.h" // TODO: delete it
 
-#define DISK_SIZE 1024 * 1024 * 16         // Bytes
+#define DISK_SIZE 1024 * 1024 * 32         // Bytes
 #define BLOCK_SIZE 512                     // Bytes
 #define BLOCK_NUM (DISK_SIZE / BLOCK_SIZE) // Num
 

@@ -1,8 +1,5 @@
 #include "inode_manager.h"
 
-#include "stdio.h"
-#include "string.h"
-
 static uint32_t compare(const char *str1,
                         const char *str2,
                         int32_t size, uint32_t start) {

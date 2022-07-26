@@ -1,4 +1,8 @@
+include_directories(boot/include)
+
 add_subdirectory(boot)
+
+# add_subdirectory(loader)
 
 target_sources(${KERNEL_TARGET} PRIVATE init.c start.S)
 

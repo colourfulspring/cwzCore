@@ -25,7 +25,7 @@ include_directories(libc/include)
 
 # 添加目标
 add_executable(${KERNEL_TARGET})
-set_target_properties(${KERNEL_TARGET} PROPERTIES OUTPUT_NAME kernel.elf)
+set_target_properties(${KERNEL_TARGET} PROPERTIES OUTPUT_NAME "${KERNEL_TARGET}.elf")
 
 # 添加子目录
 add_subdirectory(arch)

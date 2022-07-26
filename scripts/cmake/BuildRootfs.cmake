@@ -59,7 +59,12 @@ file(COPY ${kernel} DESTINATION ${_tmp_dir})                                # Co
 if (EXISTS ${_tmp_img})
     file(REMOVE ${_tmp_img})
 endif()
-execute_process(COMMAND ${mkfat32} ${IMG_SIZE} ${_tmp_img} ${_tmp_dir})     # Build temp img
+
+# Build temp img
+execute_process(COMMAND ${mkfat32} ${IMG_SIZE} ${_tmp_img} ${_tmp_dir} RESULT_VARIABLE _mkfat_res)
+if (NOT ${_mkfat_res} EQUAL 0)
+    message(FATAL_ERROR "Make fat32 failed with exit code ${_mkfat_res}")
+endif()
 
 file(REMOVE_RECURSE ${_tmp_dir})                                            # Remove temp dir
 

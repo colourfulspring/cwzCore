@@ -98,14 +98,10 @@ finish_probe:
 
 .code64                                     # 声明64位模式
 _start64:
-    // 设置栈地址
     mov $stack_top, %rsp
-    // 栈地址按照 4096 字节对齐
     and $0xFFFFFFFFFFFFF000, %rsp
-    // 帧指针修改为 0
     mov $0, %rbp
-    # 初始化 C++
-    call loader_main
+    call main
     hlt
     ret
 

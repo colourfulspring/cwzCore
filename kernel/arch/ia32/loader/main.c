@@ -1,3 +1,3 @@
-void loader_main() {
+void main() {
     int a = 1;
 }

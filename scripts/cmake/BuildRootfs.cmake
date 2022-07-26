@@ -63,12 +63,6 @@ execute_process(COMMAND ${mkfat32} ${IMG_SIZE} ${_tmp_img} ${_tmp_dir})     # Bu
 
 file(REMOVE_RECURSE ${_tmp_dir})                                            # Remove temp dir
 
-# file(READ ${bootblock} _boot_content OFFSET 0 LIMIT ${MAX_SIZE})            # Read bootblock
-# file(READ ${_tmp_img} _tmp_img_content OFFSET ${MAX_SIZE})                  # Read temp img
-# file(WRITE ${output} ${_boot_content})
-# file(APPEND ${output} ${_tmp_img_content})
-# file(REMOVE ${_tmp_img})                                                    # Remove temp img
-
 # Fill front with 0
 execute_process(COMMAND ${dd} if=/dev/zero of=${_tmp_img} bs=${MAX_SIZE} count=1 conv=notrunc)
 # Copy front of bootblock

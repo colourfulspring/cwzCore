@@ -18,7 +18,7 @@ set(SIGN_OUTPUT ${CMAKE_BINARY_DIR}/bootblock.bin)              # 扩充输出
 add_custom_command(OUTPUT ${LINK_OUTPUT} ${OBJCOPY_OUTPUT} ${SIGN_OUTPUT}
     # 手动链接
     COMMAND ${CMAKE_LINKER}
-            -m elf_i386 -nostdlib -N -T ${CMAKE_CURRENT_SOURCE_DIR}/boot.ld
+            -m elf_x86_64 -nostdlib -N -T ${CMAKE_CURRENT_SOURCE_DIR}/boot.ld
             $<TARGET_OBJECTS:${BOOT_OBJECTS}>
             -o ${LINK_OUTPUT}
     

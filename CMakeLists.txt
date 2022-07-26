@@ -32,10 +32,18 @@ else()
     message(FATAL_ERROR "Command dd not found!")
 endif()
 
+# 创建临时目录
+set(ROOTFS_DIR ${CMAKE_BINARY_DIR}/rootfs)
+if (NOT EXISTS ${ROOTFS_DIR})
+    file(MAKE_DIRECTORY ${ROOTFS_DIR})
+endif()
+
 # 设置全局可见目标名称
 set(TOOLS_TARGET tools)
 
 set(BOOT_BLOCK_TARGET bootblock)
+
+set(LOADER_TARGET loader)
 
 set(KERNEL_TARGET kernel)
 
@@ -48,9 +56,9 @@ add_subdirectory(kernel)
 
 # 最终目标
 get_target_property(BOOT_BLOCK_FILE ${BOOT_BLOCK_TARGET} OUTPUT_FILE)
-set(FINAL_OUTPUT ${CMAKE_BINARY_DIR}/scene.img)
+set(FINAL_OUTPUT ${ROOTFS_DIR}/scene.img)
 add_custom_command(OUTPUT ${FINAL_OUTPUT}
-    COMMAND ${CMAKE_DD} if=/dev/zero of=${FINAL_OUTPUT} count=10000
+    COMMAND ${CMAKE_DD} if=/dev/zero of=${FINAL_OUTPUT} count=1000
     COMMAND ${CMAKE_DD} if=${BOOT_BLOCK_FILE} of=${FINAL_OUTPUT} conv=notrunc
 	COMMAND ${CMAKE_DD} if=$<TARGET_FILE:${KERNEL_TARGET}> of=${FINAL_OUTPUT} seek=1 conv=notrunc
     DEPENDS ${BOOT_BLOCK_TARGET} ${KERNEL_TARGET}

@@ -19,9 +19,7 @@ check_defined(dd)
 check_defined(output)
 
 # Message
-get_filename_component(SCRIPT_NAME ${CMAKE_CURRENT_LIST_FILE} NAME)
-message("Run ${SCRIPT_NAME} Script")
-
+show_script_info()
 
 # Variables
 set(MAX_SIZE 446)

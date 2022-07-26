@@ -8,6 +8,14 @@ function(check_defined VAR)
 endfunction()
 
 
+# Check if a file exists, throw error if not
+function(check_exists _filename)
+    if(NOT EXISTS ${_filename})
+        message(FATAL_ERROR "${_filename} doesn't exist")
+    endif()
+endfunction()
+
+
 # Marshall filenames with |
 function(wrap_filenames OUTPUT)
     string(JOIN "|" str ${ARGN})

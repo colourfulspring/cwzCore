@@ -145,7 +145,7 @@ gdtptr64:
 
 // open PAE
     movl %cr4, %eax
-    btsl $5, %eax     // bts eax, 5 ?
+    btsl $5, %eax
     movl %eax, %cr4
 
 // load cr3
@@ -176,3 +176,14 @@ gdtptr64:
     # If bootmain returns (it shouldn't), loop.
 spin:
     jmp spin
+
+// 开启A20地址线后，暂时打开保护模式，让FS寄存器具有4GB寻址功能 代码书P57
+
+// 使用封装的Func_ReadOneSector功能把kernel.bin存入内存0x7E00
+// int $0x13 用法：
+// %ax: 待读取的磁盘起始LBA扇区号：1  除了前面有一个引导扇区（扇区号为0）外
+// %cl: 读入的扇区数量：？  ？与kernel.bin的大小有关，前提是kernel.bin不在文件系统里。
+// %es:%bx：目标缓冲区起始地址：代码书P59，宏书P56 
+// 
+// 再把内核从0x7E00移动到0x10000。代码P60
+// 

@@ -1,31 +1,34 @@
 project(kernel C ASM)
 
 # ----------------------------------------------------------------------------------------------------
-# 标准库相关
+# 函数和宏定义
+
+# 添加最小编译宏定义与编译参数
+function(set_minimal_compile_options _target _scope)
+    set(_compile_options)
+    set(_asm_compile_options)
+    set(_c_compile_options -nostdinc -ffreestanding -fPIC -Wall -fno-stack-protector -fno-builtin
+                        -Werror-implicit-function-declaration)
+
+    foreach(_option ${_compile_options})
+        target_compile_options(${_target} ${_scope} ${_option})
+    endforeach()
+
+    foreach(_option ${_asm_compile_options})
+        target_compile_options(${_target} ${_scope} $<$<COMPILE_LANGUAGE:ASM>:${_option}>)  
+    endforeach()
+
+    foreach(_option ${_c_compile_options})
+        target_compile_options(${_target} ${_scope} $<$<COMPILE_LANGUAGE:C>:${_option}>)  
+    endforeach()
+endfunction()
+
+# ----------------------------------------------------------------------------------------------------
+# 其他目标
 
 # 添加子目录
 add_subdirectory(tools)
 
-# ----------------------------------------------------------------------------------------------------
-# 作用于全局
-
-# 添加编译宏定义与编译参数
-set(_compile_options)
-set(_asm_compile_options)
-set(_c_compile_options -nostdinc -ffreestanding -fPIC -Wall -fno-stack-protector -fno-builtin
-                       -Werror-implicit-function-declaration)
-
-foreach(_option ${_compile_options})
-    add_compile_options(${_option})
-endforeach()
-
-foreach(_option ${_asm_compile_options})
-    add_compile_options($<$<COMPILE_LANGUAGE:ASM>:${_option}>)  
-endforeach()
-
-foreach(_option ${_c_compile_options})
-    add_compile_options($<$<COMPILE_LANGUAGE:C>:${_option}>)  
-endforeach()
 
 # ----------------------------------------------------------------------------------------------------
 # kernel 目标
@@ -50,6 +53,9 @@ target_include_directories(${KERNEL_TARGET} PRIVATE
 target_link_options(${KERNEL_TARGET} PRIVATE
     -no-pie -nostdlib -nostartfiles
 )
+
+# 添加最小编译选项
+set_minimal_compile_options(${KERNEL_TARGET} PRIVATE)
 
 # ----------------------------------------------------------------------------------------------------
 # 最终目标

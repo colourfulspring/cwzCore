@@ -5,9 +5,12 @@ set(BOOT_OBJECTS boot_objects)
 file(GLOB boot_src "src/*.S" "src/*.c")
 
 add_library(${BOOT_OBJECTS} OBJECT ${boot_src})
-target_compile_options(${BOOT_OBJECTS} PRIVATE
-                    -fno-builtin -fno-PIC -Wall
-                    -nostdinc -fno-stack-protector -Os -c)
+
+# 添加最小编译选项
+set_minimal_compile_options(${BOOT_OBJECTS} PRIVATE)
+
+# 设置优化选项
+target_compile_options(${BOOT_OBJECTS} PRIVATE -Os -c)
 
 # 设置输出文件名
 set(LINK_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/bootblock.o)        # 链接输出

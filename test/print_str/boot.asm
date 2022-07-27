@@ -2,11 +2,6 @@ org 0x7c00
 
 BaseOfStack equ 0x7c00
 
-test 
-
-test DW 0x17
-     DD 0,0
-
 Label_Start:
     MOV AX, CS
     MOV DS, AX

@@ -1,6 +1,10 @@
 # Scene (cwzCore)
 
-Toy OS
+---
+
+## Intro
+
+Toy Operating System.
 
 ## Requirements
 

@@ -9,8 +9,11 @@ set(CMAKE_C_STANDARD 99)
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
-set(CMAKE_SCRIPT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake)
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SCRIPT_PATH}/Modules)
+# 设置工程相关属性
+set(PROJECT_SCRIPT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake)
+
+# 设置CMake组件
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SCRIPT_PATH}/Modules)
 
 # 检查工具
 if (EXISTS ${CMAKE_LINKER})
@@ -34,34 +37,9 @@ endif()
 
 # 设置全局可见目标名称
 set(TOOLS_TARGET tools)
-
 set(BOOT_BLOCK_TARGET bootblock)
-
 set(LOADER_TARGET loader)
-
 set(KERNEL_TARGET kernel)
-
 set(FINAL_TARGET scene)
 
-# 添加子目录
-add_subdirectory(tools)
-
-add_subdirectory(kernel)
-
-# 最终目标
-get_target_property(BOOT_BLOCK_FILE ${BOOT_BLOCK_TARGET} OUTPUT_FILE)
-set(FINAL_OUTPUT ${CMAKE_BINARY_DIR}/scene.img)
-add_custom_command(OUTPUT ${FINAL_OUTPUT}
-    COMMAND ${CMAKE_COMMAND}
-            -D check_size=true
-            -D bootblock=${BOOT_BLOCK_FILE}
-            -D loader=$<TARGET_FILE:${LOADER_TARGET}>
-            -D kernel=$<TARGET_FILE:${KERNEL_TARGET}>
-            -D mkfat32=$<TARGET_FILE:mkfat32>
-            -D dd=${CMAKE_DD}
-            -D output=${FINAL_OUTPUT}
-            -P ${CMAKE_SCRIPT_PATH}/BuildRootfs.cmake
-    DEPENDS ${TOOLS_TARGET} ${BOOT_BLOCK_TARGET} ${LOADER_TARGET} ${KERNEL_TARGET}
-)
-add_custom_target(${FINAL_TARGET} ALL DEPENDS ${FINAL_OUTPUT})
-set_target_properties(${FINAL_TARGET} PROPERTIES OUTPUT_FILE ${FINAL_OUTPUT})
+add_subdirectory(src)

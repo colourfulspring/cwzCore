@@ -29,3 +29,9 @@ function(unwrap_filenames filenames OUTPUT)
     string_split(list ${filenames} "|")
     set(${OUTPUT} ${list} PARENT_SCOPE)
 endfunction()
+
+
+macro(show_script_info)
+    get_filename_component(SCRIPT_NAME ${CMAKE_CURRENT_LIST_FILE} NAME)
+    message("Run ${SCRIPT_NAME} Script")
+endmacro(show_script_info)

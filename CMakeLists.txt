@@ -9,6 +9,9 @@ set(CMAKE_C_STANDARD 99)
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+# 设置构建开关
+set(BUILD_TEST on)
+
 # 设置工程相关属性
 set(PROJECT_SCRIPT_PATH ${CMAKE_CURRENT_SOURCE_DIR}/scripts/cmake)
 
@@ -43,3 +46,7 @@ set(KERNEL_TARGET kernel)
 set(FINAL_TARGET scene)
 
 add_subdirectory(src)
+
+if (BUILD_TEST)
+    add_subdirectory(test)
+endif()

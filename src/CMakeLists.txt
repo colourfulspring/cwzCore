@@ -61,12 +61,13 @@ set_minimal_compile_options(${KERNEL_TARGET} PRIVATE)
 # 最终目标
 
 get_target_property(BOOT_BLOCK_FILE ${BOOT_BLOCK_TARGET} OUTPUT_FILE)
+get_target_property(LOADER_FILE ${LOADER_TARGET} OUTPUT_FILE)
 set(FINAL_OUTPUT ${CMAKE_BINARY_DIR}/scene.img)
 add_custom_command(OUTPUT ${FINAL_OUTPUT}
     COMMAND ${CMAKE_COMMAND}
             -D check_size=true
             -D bootblock=${BOOT_BLOCK_FILE}
-            -D loader=$<TARGET_FILE:${LOADER_TARGET}>
+            -D loader=${LOADER_FILE}
             -D kernel=$<TARGET_FILE:${KERNEL_TARGET}>
             -D mkfat32=$<TARGET_FILE:mkfat32>
             -D dd=${CMAKE_DD}

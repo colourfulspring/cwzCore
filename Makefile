@@ -17,5 +17,8 @@ clean:
 qemu:
 	qemu-system-i386 -nographic -drive file=$(KERNEL_IMG)
 
+qemu2:
+	qemu-system-i386 -nographic -hda $(KERNEL_IMG)
+
 dos2unix:
 	find . -type f -exec dos2unix {} \;

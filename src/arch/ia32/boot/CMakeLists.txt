@@ -2,7 +2,9 @@ project(boot C ASM)
 
 # 编译启动块的各个目标文件
 set(BOOT_OBJECTS boot_objects)
-file(GLOB boot_src "src/*.S" "src/*.c")
+
+# file(GLOB boot_src "src/*.S" "src/*.c")
+set(boot_src src/boot0.S)
 
 add_library(${BOOT_OBJECTS} OBJECT ${boot_src})
 
@@ -10,7 +12,7 @@ add_library(${BOOT_OBJECTS} OBJECT ${boot_src})
 set_minimal_compile_options(${BOOT_OBJECTS} PRIVATE)
 
 # 设置优化选项
-target_compile_options(${BOOT_OBJECTS} PRIVATE -Os -c)
+target_compile_options(${BOOT_OBJECTS} PRIVATE -Os)
 
 # 设置输出文件名
 set(LINK_OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/bootblock.o)        # 链接输出

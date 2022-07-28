@@ -50,3 +50,8 @@ add_subdirectory(src)
 if (BUILD_TEST)
     add_subdirectory(test)
 endif()
+
+add_custom_target(rebuild
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target clean
+    COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target all
+)

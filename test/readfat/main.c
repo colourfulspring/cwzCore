@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
     long root_dir_offset = FAT12_FS_start_offset +
                            (long) (fat12_head.BPB_ResvdSecCnt +
                                    fat12_head.BPB_NumFATs * fat12_head.BPB_FATSz16) *
-                                   SECTOR_SIZE;
+                               SECTOR_SIZE;
     err = fseek(f, root_dir_offset, SEEK_SET);
     if (err) {
         fprintf(stderr, "fseek error, err num: %d.\n", err);
@@ -154,7 +154,7 @@ int main(int argc, char *argv[]) {
         if (*((char *) &file_ent) == '\0') {
             break;
         }
-        if (strncmp(file_ent.name, filename, 11) == 0) {
+        if (strncmp((const char *) file_ent.name, filename, 11) == 0) {
             // entry found
             found = 1;
             break;
@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
             r = 1 - r;
         }
 
-        num = ((uint32_t) item[2] << 4u) | (uint16_t)(item[1] >> 4u);
+        num = ((uint32_t) item[2] << 4u) | (uint16_t) (item[1] >> 4u);
         if (num == 0xFFF) {
             break;
         }
@@ -256,7 +256,7 @@ int main(int argc, char *argv[]) {
 
         res = fread(buf + buf_offset, cur_size, 1, f);
         if (res != 1) {
-            printf("%lld", res);
+            printf("%ld", res);
             fprintf(stderr, "fread error %d.\n", ferror(f));
             fflush(stderr);
             return -1;

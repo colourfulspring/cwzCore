@@ -1,5 +1,3 @@
-.set ShitHappensCodePos, ShitHappens + 0x06
-
 .code16                                             # 声明16位模式
 
 # 代码段：准备
@@ -18,9 +16,6 @@ SetupTheStackPointer:
   mov $0x7c00, %sp
 
 start:
-  mov $BootLoaderStart, %si
-  call PrintString
-
 // 查看是否支持拓展int 13h
 CheckInt13:
   mov $0x41, %ah
@@ -28,35 +23,14 @@ CheckInt13:
   mov $0x80, %dl
   int $0x13
   cmp $0xaa55, %bx
-  movb $0x31, ShitHappensCodePos
   jnz BootLoaderEnd
 
 // 寻找MBR分区表中的活动分区，看分区项第一个字节是否为0x80，最多4个分区
 SeekTheActivePartition:
-
   // 分区表位于0x7c00+446=0x7c00+0x1be=0x7dbe的位置，使用di作为基地址
   mov $0x7dbe, %di
 
-//  mov $4, %cx
-//   isActivePartition:
-//     mov (%di), %bl
-//     cmp $0x80, %bl 
-//     // 如果是则说明找到了，使用jmp if equel指令跳转继续
-//     je ActivePartitionFound
-//     // 如果没找到，则继续寻找下一个分区项，si+16
-//     add $16, %di
-//     loop isActivePartition
-//   ActivePartitionNotFound:
-//     movb $0x32, ShitHappensCodePos
-//     jmp BootLoaderEnd
-
-// 找到活动分区后，di目前就是活动分区项的首地址
-
 ActivePartitionFound:
-
-  // mov $PartitionFound, %si
-  // call PrintString
-
   // ebx保存活动分区的起始地址(StartLBA)
   mov 8(%di), %ebx
   movl %ebx, BlockLow # 写4字节到BlockLow位置
@@ -111,19 +85,11 @@ ReadRootDirectory:
   mov $0x8000, %di 
   movb $8, BlockCount # 读取根目录8个扇区
   call ReadDisk
-  movb $0x34, ShitHappensCodePos
 
-// .set STR_LOAD, 0x4c4f4144
-// .set STR_ER__, 0x45522020
-// .set set_ELF_, 0x454c4620
-// .set set_BIN_, 0x42494e20
 .set STR_LOAD, 0x44414f4c
 .set STR_ER__, 0x20205245
 .set set_ELF_, 0x20464c45
 .set set_BIN_, 0x204e4942
-
-// FileNameStr:
-//   .ascii "LOADER  BIN"
 
 SeekTheInitialBin:
   cmpl $STR_LOAD, (%di)
@@ -135,24 +101,6 @@ SeekTheInitialBin:
 
   jmp InitialBinFound
   
-  // movw $11, %cx                 # 循环变量
-
-  // mov %di, %bx                  # 当前文件名索引
-  // mov $FileNameStr, %dx         # 匹配文件名索引
-  // xor
-
-  // checkChar:
-  //   movb (%bx), %al             # 当前文件名
-  //   cmpb %al, (%dx)             # 匹配文件名
-  //   jne nextFile
-
-  //   add $1, %bx
-  //   add $1, %dx                 # 索引++
-
-  //   loop checkChar              # 循环遍历--
-
-  //   jmp InitialBinFound
-    
   nextFile:
     cmp $0x9000, %di
     ja BootLoaderEnd
@@ -160,9 +108,6 @@ SeekTheInitialBin:
     jmp SeekTheInitialBin
 
 InitialBinFound:
-  mov $InitialFound, %si
-  call PrintString
-
   // 获取文件长度
   mov 0x1c(%di), %ax
   mov 0x1e(%di), %dx
@@ -219,13 +164,6 @@ InitialBinFound:
     call ReadDisk
 
     // 跳转到Initial.bin继续执行
-    mov $GotoInitial, %si
-    call PrintString
-
-    // mov 0x9001, %ax
-    // movb %al, ShitHappensCodePos
-    // jmp BootLoaderEnd
-
     jmp *%di
 
 // BIOS INT 13H 中断服务：磁盘服务
@@ -242,40 +180,15 @@ InitialBinFound:
 // SI 参数结构体
 
 ReadDisk:
-  mov $0x42, %AH
+  mov $0x42, %ah
   mov $0x80, %dl
   mov $DiskAddressPacket, %si
   int $0x13
   test %ah, %ah										# AH==0 说明成功
-  movb $0x33, ShitHappensCodePos
   jnz BootLoaderEnd
   ret
 
-// 打印以0x0a结尾的字符串
-PrintString:
-  push %ax
-  push %cx
-  push %si
-  mov $512, %cx
-
-  PrintChar:
-    mov (%si), %al
-    mov $0x0e, %ah
-    int $0x10
-    cmpb $0x0a,(%si)
-    je Return
-    inc %si
-    loop PrintChar
-	
-  Return:
-    pop %si
-    pop %cx
-    pop %ax
-    ret
-
 BootLoaderEnd:
-  mov $ShitHappens, %si 
-  call PrintString
   hlt
 
 // 使用拓展int 13h读取硬盘的结构体DAP
@@ -301,28 +214,6 @@ BlockLow:
   // 这是高字节部分，0x0c
 BlockHigh:
   .int 0
-
-ImportantTips:
-
-BootLoaderStart: 
-  .ascii "Start Booting!"
-  .word 0x0d, 0x0a
-
-// PartitionFound:
-//   .ascii "Get Partition!"
-//   .word 0x0d, 0x0a
-
-InitialFound:
-  .ascii "Get Initial!"
-  .word 0x0d, 0x0a
-
-GotoInitial:
-  .ascii "Go to Initial!"
-  .word 0x0d, 0x0a
-
-ShitHappens:
-  .ascii "Error 0, Shit happens!"
-  .word 0x0d, 0x0a
 
 // 结束为止
 // times 446-($-$$) db 0

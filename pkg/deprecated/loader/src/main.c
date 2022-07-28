@@ -2,6 +2,8 @@ extern void ClearScreen();
 extern void TestPrint();
 
 void main() {
-    ClearScreen();
-    TestPrint();
+    while (1) {
+        ClearScreen();
+        TestPrint();
+    }
 }

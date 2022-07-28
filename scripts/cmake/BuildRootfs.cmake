@@ -23,6 +23,7 @@ show_script_info()
 
 # Variables
 set(MAX_SIZE 446)
+set(RES_SIZE 10240)
 set(IMG_SIZE 1024000)
 
 # Check existence
@@ -40,6 +41,13 @@ if (DEFINED check_size)
     else()
         message("Size of bootblock : ${_size1} Bytes")
     endif()
+
+    file(SIZE ${loader} _size2)
+    if (${_size2} GREATER ${RES_SIZE})
+        message(FATAL_ERROR "Size of loader : ${_size2} >> ${RES_SIZE} Bytes !!!")
+    else()
+        message("Size of loader : ${_size2} Bytes")
+    endif()
 endif()
 
 # Set rootfs dir
@@ -51,7 +59,6 @@ if (EXISTS ${_tmp_dir})
     file(REMOVE_RECURSE ${_tmp_dir})
 endif()
 file(MAKE_DIRECTORY ${_tmp_dir})                                            # Make temp dir
-file(COPY ${loader} DESTINATION ${_tmp_dir})                                # Copy loader
 file(COPY ${kernel} DESTINATION ${_tmp_dir})                                # Copy kernel
 
 if (EXISTS ${_tmp_img})
@@ -67,9 +74,14 @@ endif()
 file(REMOVE_RECURSE ${_tmp_dir})                                            # Remove temp dir
 
 # Fill front with 0
+message("Fill with 0 at start")
 execute_process(COMMAND ${dd} if=/dev/zero of=${_tmp_img} bs=${MAX_SIZE} count=1 conv=notrunc)
 # Copy front of bootblock
+message("Copy boot block")
 execute_process(COMMAND ${dd} if=${bootblock} of=${_tmp_img} bs=${MAX_SIZE} count=1 conv=notrunc)
+# Copy loader
+message("Copy loader")
+execute_process(COMMAND ${dd} if=${loader} of=${_tmp_img} seek=1 bs=512 count=20 conv=notrunc)
 
 file(RENAME ${_tmp_img} ${output})
 

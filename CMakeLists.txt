@@ -40,8 +40,8 @@ endif()
 
 # 设置全局可见目标名称
 set(TOOLS_TARGET tools)
-set(BOOT_BLOCK_TARGET bootblock)
-set(LOADER_TARGET loader)
+set(BOOT_BLOCK_TARGET boot)     # 引导
+set(LOADER_TARGET loader)       # 加载
 set(KERNEL_TARGET kernel)
 set(FINAL_TARGET scene)
 

@@ -11,20 +11,20 @@ ZeroTheSegmentRegister:
   mov %ax, %ds
   mov %ax, %es
   mov %ax, %ss
-
-// 栈空间位于0x7c00及往前的空间，栈顶在0x7c00
-SetupTheStackPointer:
-  mov $0, %bp
-  mov $0x7c00, %sp
-
+  
 start:
   mov $BootLoaderStart, %si
   call PrintString
 
+// 栈空间位于0x7c00及往前的空间，栈顶在0x7c00
+SetupTheStackPointer:
+  mov $0, %bp
+  mov $start, %sp
+
 // 查看是否支持拓展int 13h
 CheckInt13:
   mov $0x41, %ah
-  mov $0x55aa, %bx 
+  mov $0x55aa, %bx
   mov $0x80, %dl
   int $0x13
   cmp $0xaa55, %bx
@@ -86,7 +86,7 @@ GetFirstFat:
   push %ax              # 保存每个簇中的块个数
   
   // 0x7e00+17 BPB_RootEntCnt
-  movw 0xb(%di), %ax
+  movw 0x11(%di), %ax
   push %ax              # 保存根目录最多项数
 
 // 获取数据区起始区扇区号
@@ -108,7 +108,7 @@ GetDataAreaBase:
 ReadRootDirectory:
   mov %ebx, BlockLow
   movw $0x8000, BufferOffset 
-  mov $0x8000, %di 
+  mov $0x8000, %di
   movb $8, BlockCount # 读取根目录8个扇区
   call ReadDisk
   movb $0x34, ShitHappensCodePos

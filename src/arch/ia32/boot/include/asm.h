@@ -35,6 +35,6 @@
 #define BOOT_START 0x7C00
 #define LOADER_START 0x7E00
 
-#define LOADER_SECTORS 20
+#define LOADER_SECTORS 8
 
 #endif /* !__BOOT_ASM_H__ */

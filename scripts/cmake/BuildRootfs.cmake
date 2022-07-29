@@ -23,7 +23,7 @@ show_script_info()
 
 # Variables
 set(MAX_SIZE 446)
-set(RES_SIZE 10240)
+set(RES_SIZE 4096)
 set(IMG_SIZE 1024000)
 
 # Check existence
@@ -81,7 +81,7 @@ message("Copy boot block")
 execute_process(COMMAND ${dd} if=${bootblock} of=${_tmp_img} bs=${MAX_SIZE} count=1 conv=notrunc)
 # Copy loader
 message("Copy loader")
-execute_process(COMMAND ${dd} if=${loader} of=${_tmp_img} seek=1 bs=512 count=20 conv=notrunc)
+execute_process(COMMAND ${dd} if=${loader} of=${_tmp_img} seek=1 bs=512 count=8 conv=notrunc)
 
 file(RENAME ${_tmp_img} ${output})
 

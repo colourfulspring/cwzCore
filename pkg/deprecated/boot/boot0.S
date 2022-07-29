@@ -60,7 +60,7 @@ GetFirstFat:
   push %ax              # 保存每个簇中的块个数
   
   // 0x7e00+17 BPB_RootEntCnt
-  movw 0xb(%di), %ax
+  movw 0x11(%di), %ax
   push %ax              # 保存根目录最多项数
 
 // 获取数据区起始区扇区号
@@ -88,15 +88,15 @@ ReadRootDirectory:
 
 .set STR_LOAD, 0x44414f4c
 .set STR_ER__, 0x20205245
-.set set_ELF_, 0x20464c45
-.set set_BIN_, 0x204e4942
+.set STR_ELF_, 0x20464c45
+.set STR_BIN_, 0x204e4942
 
 SeekTheInitialBin:
   cmpl $STR_LOAD, (%di)
   jne nextFile
   cmpl $STR_ER__, 4(%di)
   jne nextFile
-  cmpl $set_BIN_, 8(%di)
+  cmpl $STR_BIN_, 8(%di)
   jne nextFile
 
   jmp InitialBinFound
